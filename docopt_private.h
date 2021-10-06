@@ -564,7 +564,7 @@ namespace docopt {
 			std::smatch match;
 			if (std::regex_search(options_end, option_description.end(),
 						  match,
-						  std::regex{"\\[default: (.*)\\]", std::regex::icase}))
+						  std::regex{"\\[predefinido: (.*)\\]", std::regex::icase}))
 			{
 				val = match[1].str();
 			}

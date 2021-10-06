@@ -243,7 +243,7 @@ static PatternList parse_long(Tokens& tokens, std::vector<Option>& options)
 
 	if (similar.size() > 1) { // might be simply specified ambiguously 2+ times?
 		std::vector<std::string> prefixes = longOptions(similar.begin(), similar.end());
-		std::string error = "'" + longOpt + "' is not a unique prefix: ";
+		std::string error = "'" + longOpt + "' no es un prefijo único: ";
 		error.append(join(prefixes.begin(), prefixes.end(), ", "));
 		throw Tokens::OptionError(std::move(error));
 	} else if (similar.empty()) {
@@ -259,14 +259,14 @@ static PatternList parse_long(Tokens& tokens, std::vector<Option>& options)
 		auto o = std::make_shared<Option>(*similar[0]);
 		if (o->argCount() == 0) {
 			if (val) {
-				std::string error = o->longOption() + " must not have an argument";
+				std::string error = o->longOption() + " no debe tener argumento";
 				throw Tokens::OptionError(std::move(error));
 			}
 		} else {
 			if (!val) {
 				auto const& token = tokens.current();
 				if (token.empty() || token=="--") {
-					std::string error = o->longOption() + " requires an argument";
+					std::string error = o->longOption() + " requiere argumento";
 					throw Tokens::OptionError(std::move(error));
 				}
 				val = tokens.pop();
@@ -305,8 +305,8 @@ static PatternList parse_short(Tokens& tokens, std::vector<Option>& options)
 		}
 
 		if (similar.size() > 1) {
-			std::string error = shortOpt + " is specified ambiguously "
-			+ std::to_string(similar.size()) + " times";
+			std::string error = shortOpt + " se ha especificado de forma ambigua "
+			+ std::to_string(similar.size()) + " veces";
 			throw Tokens::OptionError(std::move(error));
 		} else if (similar.empty()) {
 			options.emplace_back(shortOpt, "", 0);
@@ -324,7 +324,7 @@ static PatternList parse_short(Tokens& tokens, std::vector<Option>& options)
 					// consume the next token
 					auto const& ttoken = tokens.current();
 					if (ttoken.empty() || ttoken=="--") {
-						std::string error = shortOpt + " requires an argument";
+						std::string error = shortOpt + " precisa un argumento";
 						throw Tokens::OptionError(std::move(error));
 					}
 					val = tokens.pop();
@@ -363,7 +363,7 @@ static PatternList parse_atom(Tokens& tokens, std::vector<Option>& options)
 
 		auto trailing = tokens.pop();
 		if (trailing != "]") {
-			throw DocoptLanguageError("Mismatched '['");
+			throw DocoptLanguageError("'[' discordante");
 		}
 
 		ret.emplace_back(std::make_shared<Optional>(std::move(expr)));
@@ -374,11 +374,11 @@ static PatternList parse_atom(Tokens& tokens, std::vector<Option>& options)
 
 		auto trailing = tokens.pop();
 		if (trailing != ")") {
-			throw DocoptLanguageError("Mismatched '('");
+			throw DocoptLanguageError("'(' discordante");
 		}
 
 		ret.emplace_back(std::make_shared<Required>(std::move(expr)));
-	} else if (token == "options") {
+	} else if (token == "opciones") {
 		tokens.pop();
 		ret.emplace_back(std::make_shared<OptionsShortcut>());
 	} else if (starts_with(token, "--") && token != "--") {
@@ -461,7 +461,7 @@ static Required parse_pattern(std::string const& source, std::vector<Option>& op
 	auto result = parse_expr(tokens, options);
 
 	if (tokens)
-		throw DocoptLanguageError("Unexpected ending: '" + tokens.the_rest() + "'");
+		throw DocoptLanguageError("Final inesperado: '" + tokens.the_rest() + "'");
 
 	assert(result.size() == 1  &&  "top level is always one big");
 	return Required{ std::move(result) };
@@ -532,7 +532,7 @@ static std::vector<Option> parse_defaults(std::string const& doc) {
 	};
 
 	std::vector<Option> defaults;
-	for (auto s : parse_section("options:", doc)) {
+	for (auto s : parse_section("opciones:", doc)) {
 		s.erase(s.begin(), s.begin() + static_cast<std::ptrdiff_t>(s.find(':')) + 1); // get rid of "options:"
 
 		for (const auto& opt : regex_split(s, re_delimiter)) {
@@ -568,12 +568,12 @@ static void extras(bool help, bool version, PatternList const& options) {
 // Parse the doc string and generate the Pattern tree
 static std::pair<Required, std::vector<Option>> create_pattern_tree(std::string const& doc)
 {
-	auto usage_sections = parse_section("usage:", doc);
+	auto usage_sections = parse_section("uso:", doc);
 	if (usage_sections.empty()) {
-		throw DocoptLanguageError("'usage:' (case-insensitive) not found.");
+		throw DocoptLanguageError("'uso:' (en mayúsculas o minúsculas) no encontrado.");
 	}
 	if (usage_sections.size() > 1) {
-		throw DocoptLanguageError("More than one 'usage:' (case-insensitive).");
+		throw DocoptLanguageError("Más de un 'uso:' (en mayúsculas o minúsculas).");
 	}
 
 	std::vector<Option> options = parse_defaults(doc);
@@ -652,10 +652,10 @@ docopt::docopt_parse(std::string const& doc,
 
 	if (matched) {
 		std::string leftover = join(argv.begin(), argv.end(), ", ");
-		throw DocoptArgumentError("Unexpected argument: " + leftover);
+		throw DocoptArgumentError("Argumento inesperado: " + leftover);
 	}
 
-	throw DocoptArgumentError("Arguments did not match expected patterns"); // BLEH. Bad error.
+	throw DocoptArgumentError("Los argumentos no concuerdan con el patrón esperado"); // BLEH. Bad error.
 }
 
 DOCOPT_INLINE
@@ -675,7 +675,7 @@ docopt::docopt(std::string const& doc,
 		std::cout << version << std::endl;
 		std::exit(0);
 	} catch (DocoptLanguageError const& error) {
-		std::cerr << "Docopt usage string could not be parsed" << std::endl;
+		std::cerr << "No se ha podido analizar el mensaje de uso" << std::endl;
 		std::cerr << error.what() << std::endl;
 		std::exit(-1);
 	} catch (DocoptArgumentError const& error) {
